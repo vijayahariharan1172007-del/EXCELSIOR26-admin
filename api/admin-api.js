@@ -1,4 +1,4 @@
-import { response,requireAdmin,audit } from './_admin.js';
+import { response,requireAdmin,audit,methodGuard } from './_admin.js';
 
 export default async function handler(request){
   const bad=methodGuard(request); if(bad) return bad;
