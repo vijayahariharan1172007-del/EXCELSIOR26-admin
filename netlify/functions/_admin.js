@@ -11,7 +11,7 @@ async function requireAdmin(event,minimum='admin'){
  const s=client(c.url,c.key);
  const {data:admin,error:ae}=await s.from('admin_accounts').select('id,email,display_name,enabled,created_at').eq('email',data.user.email).maybeSingle();
  if(ae)throw ae;if(!admin||!admin.enabled)throw Object.assign(new Error('Admin account is disabled or missing'),{status:403});
- return{user:data.user,admin,supabase:s,role:minimum==='owner'?(admin.email===data.user.email&&data.user.email===process.env.ADMIN_OWNER_EMAIL?'owner':null):'admin'};
+ const {data:first}=await s.from('admin_accounts').select('id').eq('enabled',true).order('created_at',{ascending:true}).limit(1).maybeSingle(); const isOwner=!!first&&first.id===admin.id; if(minimum==='owner'&&!isOwner)throw Object.assign(new Error('Owner authorization required'),{status:403}); return{user:data.user,admin:{...admin,role:isOwner?'owner':'admin'},supabase:s,role:isOwner?'owner':'admin'};
 }
 function actor(a){return{admin_phone:a.admin.phone||'',actor_name:a.admin.display_name||'',actor_email:a.admin.email||''}}
 async function audit(ctx,action,meta={}){await ctx.supabase.from('admin_audit').insert({...actor(ctx),action,meta})}
