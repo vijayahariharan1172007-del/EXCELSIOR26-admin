@@ -1,4 +1,3 @@
-import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 export function client(url,key){
@@ -13,7 +12,6 @@ function env(){
   if(!url||!key) throw new Error('Server Supabase credentials are not configured.');
   return {url,key};
 }
-function tokenHash(token){return crypto.createHash('sha256').update(token).digest('hex');}
 
 export async function requireAdmin(request,minimum='admin'){
   const c=env(),s=client(c.url,c.key);
