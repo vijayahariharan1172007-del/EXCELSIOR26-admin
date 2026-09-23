@@ -92,8 +92,6 @@ export default async function handler(request){
       if(!/^\\S+@\\S+\\.\\S+$/.test(email)||!display) return response(400,{ok:false,error:'Valid email and display name are required'});
       const enabled=await s.from('admin_accounts').select('id',{count:'exact',head:true}).eq('enabled',true);
       if((enabled.count||0)>=10) return response(409,{ok:false,error:'Maximum of 10 enabled admins reached'});
-      const inv=await s.auth.admin.inviteUserByEmail(email,{data:{display_name:display},redirectTo:process.env.ADMIN_INVITE_REDIRECT_URL||undefined});
-      if(inv.error) throw inv.error;
       const ins=await s.from('admin_accounts').insert({email,display_name:display,enabled:true,created_by:ctx.admin.email}).select('id,email,display_name,enabled').single();
       if(ins.error) throw ins.error;
       await audit(ctx,'admin_create',{email,display_name:display}); return response(200,{ok:true,data:ins.data});
