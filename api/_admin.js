@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 export function client(url,key){
@@ -12,21 +13,27 @@ function env(){
   if(!url||!key) throw new Error('Server Supabase credentials are not configured.');
   return {url,key};
 }
+function tokenHash(token){return crypto.createHash('sha256').update(token).digest('hex');}
+
 export async function requireAdmin(request,minimum='admin'){
   const token=String(request.headers.get('authorization')||'').replace(/^Bearer\\s+/i,'').trim();
   if(!token) throw Object.assign(new Error('Missing authorization token'),{status:401});
-  const c=env();
-  const auth=client(c.url,process.env.SUPABASE_PUBLISHABLE_KEY||c.key);
-  const {data,error}=await auth.auth.getUser(token);
-  if(error||!data.user) throw Object.assign(new Error('Invalid or expired session'),{status:401});
-  const s=client(c.url,c.key);
-  const {data:admin,error:ae}=await s.from('admin_accounts').select('id,email,display_name,enabled,created_at').eq('email',data.user.email).maybeSingle();
-  if(ae) throw ae;
-  if(!admin||!admin.enabled) throw Object.assign(new Error('Admin account is disabled or missing'),{status:403});
+  const c=env(),s=client(c.url,c.key);
+  const {data:cred,error:ce}=await s.from('admin_login_credentials')
+    .select('email,display_name,enabled,session_expires_at')
+    .eq('session_token_hash',tokenHash(token)).eq('enabled',true).maybeSingle();
+  if(ce)throw ce;
+  if(!cred||!cred.session_expires_at||new Date(cred.session_expires_at).getTime()<Date.now())
+    throw Object.assign(new Error('Invalid or expired admin session'),{status:401});
+  const {data:admin,error:ae}=await s.from('admin_accounts')
+    .select('id,email,display_name,enabled,created_at,phone')
+    .eq('email',cred.email).maybeSingle();
+  if(ae)throw ae;
+  if(!admin||!admin.enabled)throw Object.assign(new Error('Admin account is disabled or missing'),{status:403});
   const {data:first}=await s.from('admin_accounts').select('id').eq('enabled',true).order('created_at',{ascending:true}).limit(1).maybeSingle();
   const isOwner=!!first&&first.id===admin.id;
-  if(minimum==='owner'&&!isOwner) throw Object.assign(new Error('Owner authorization required'),{status:403});
-  return {user:data.user,admin:{...admin,role:isOwner?'owner':'admin'},supabase:s,role:isOwner?'owner':'admin'};
+  if(minimum==='owner'&&!isOwner)throw Object.assign(new Error('Owner authorization required'),{status:403});
+  return {admin:{...admin,role:isOwner?'owner':'admin'},supabase:s,role:isOwner?'owner':'admin'};
 }
 export async function audit(ctx,action,meta={}){
   await ctx.supabase.from('admin_audit').insert({
@@ -34,6 +41,6 @@ export async function audit(ctx,action,meta={}){
   });
 }
 export function methodGuard(request,method='POST'){
-  if(request.method!==method) return response(405,{ok:false,error:`${method} required`});
+  if(request.method!==method)return response(405,{ok:false,error:method+' required'});
   return null;
 }
