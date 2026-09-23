@@ -20,38 +20,27 @@ export default async function handler(request){
       const email=String(body.email||'').trim().toLowerCase();
       const password=String(body.password||'');
       if(!email||!password)return response(400,{ok:false,error:'Email and password are required.'});
-
-      const q=await s.from('admin_login_credentials')
-        .select('id,email,display_name,enabled')
-        .eq('email',email)
-        .eq('enabled',true)
-        .filter('password_hash','eq',password);
-      // Password verification is performed below with PostgreSQL crypt(), not by returning the hash.
       const verified=await s.rpc('verify_admin_password',{p_email:email,p_password:password});
-      if(verified.error) throw verified.error;
-      if(!verified.data) return response(401,{ok:false,error:'Invalid email or password.'});
-
+      if(verified.error)throw verified.error;
+      if(!verified.data)return response(401,{ok:false,error:'Invalid email or password.'});
       const a=await s.from('admin_accounts').select('id,email,display_name,enabled,created_at')
         .eq('email',email).eq('enabled',true).maybeSingle();
       if(a.error)throw a.error;
       if(!a.data)return response(403,{ok:false,error:'This account is not enabled for the admin portal.'});
-
       const token=crypto.randomBytes(48).toString('base64url');
       const expires=new Date(Date.now()+8*60*60*1000).toISOString();
       const upd=await s.from('admin_login_credentials').update({
         session_token_hash:hashToken(token),session_expires_at:expires,updated_at:new Date().toISOString()
       }).eq('email',email);
       if(upd.error)throw upd.error;
-      return response(200,{ok:true,token,admin:{...a.data,role:'admin'}});
+      return response(200,{ok:true,token,admin:{...a.data,role:'owner'}});
     }
 
     if(action==='logout'){
       const token=String(request.headers.get('authorization')||'').replace(/^Bearer\s+/i,'').trim();
-      if(token){
-        await s.from('admin_login_credentials').update({session_token_hash:null,session_expires_at:null,updated_at:new Date().toISOString()}).eq('session_token_hash',hashToken(token));
-      }
+      if(token) await s.from('admin_login_credentials').update({session_token_hash:null,session_expires_at:null,updated_at:new Date().toISOString()}).eq('session_token_hash',hashToken(token));
       return response(200,{ok:true});
     }
     return response(400,{ok:false,error:'Unknown login action'});
-  }catch(e){return response(e.status||500,{ok:false,error:e.message||'Login failed'});}
+  }catch(e){return response(e.status||500,{ok:e.message||'Login failed'});}
 }
