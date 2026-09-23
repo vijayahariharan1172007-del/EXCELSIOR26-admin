@@ -27,13 +27,16 @@ export default async function handler(request){
         .eq('email',email).eq('enabled',true).maybeSingle();
       if(a.error)throw a.error;
       if(!a.data)return response(403,{ok:false,error:'This account is not enabled for the admin portal.'});
+      const first=await s.from('admin_accounts').select('id').eq('enabled',true).order('created_at',{ascending:true}).limit(1).maybeSingle();
+      if(first.error)throw first.error;
+      const role=first.data?.id===a.data.id?'owner':'admin';
       const token=crypto.randomBytes(48).toString('base64url');
       const expires=new Date(Date.now()+8*60*60*1000).toISOString();
       const upd=await s.from('admin_login_credentials').update({
         session_token_hash:hashToken(token),session_expires_at:expires,updated_at:new Date().toISOString()
       }).eq('email',email);
       if(upd.error)throw upd.error;
-      return response(200,{ok:true,token,admin:{...a.data,role:'owner'}});
+      return response(200,{ok:true,token,admin:{...a.data,role}});
     }
 
     if(action==='logout'){
