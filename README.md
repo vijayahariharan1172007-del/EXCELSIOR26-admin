@@ -2,13 +2,11 @@
 
 A separate React/Vite admin console for EXCELSIOR'26 using Supabase Database/Storage and Vercel Functions.
 
-## Important: no interactive admin login
+## Admin access
 
-This portal intentionally has **no login page, password field, Supabase Auth sign-in flow, or server-issued admin session**.
+The portal uses a **login overlay**, not a separate login page. Ten operator accounts are defined by username + server-side SHA-256 password hashes. Successful login creates an 8-hour signed admin session. The first account is the owner and can access owner-only admin management and credential exports.
 
-The browser opens the admin console directly. Vercel Functions use the configured server-side Supabase service-role key for database operations. The `admin_accounts` table is retained as the admin-record/owner metadata source used by the console.
-
-Because there is no interactive authentication, this deployment must not be treated as a public internet-facing security boundary. Use Vercel project/access protection or another network-level restriction if the admin URL needs to be private.
+The password values are not bundled into browser code. Put the generated credential JSON into the server-only `ADMIN_CREDENTIALS_JSON` variable when you want the owner to download the credential PDF. Keep that variable private.
 
 ## Vercel deployment
 
@@ -19,6 +17,8 @@ Because there is no interactive authentication, this deployment must not be trea
    - SUPABASE_URL
    - SUPABASE_SERVICE_ROLE_KEY
    - SUPABASE_PUBLISHABLE_KEY
+   - ADMIN_SESSION_SECRET
+   - ADMIN_CREDENTIALS_JSON
    - GMAIL_SENDER
    - GMAIL_APP_PASSWORD
 5. Redeploy after adding/changing variables.
@@ -28,10 +28,12 @@ The service-role key and Gmail password are server-only. They are never bundled 
 ## Admin API
 
 Vercel Functions:
-- `/api/admin-api` — admin operations
+- `/api/admin-login` — overlay login
+- `/api/admin-api` — admin operations and audit logging
+- `/api/admin-credentials-pdf` — owner-only credential PDF
 - `/api/send-qr-email` — QR email delivery
 
-There is no `/api/admin-login` endpoint.
+Every authenticated admin API action is recorded in `admin_audit` with the operator username/name.
 
 ## Included admin areas
 
@@ -48,8 +50,10 @@ Copy `.env.example` to `.env` and fill the local values. Do not commit real secr
 
 ## Security
 
-- No passwords are collected or stored by this portal.
-- No admin login/session-token flow is used.
+- Passwords are accepted only by the login endpoint and compared against server-side hashes.
+- Admin sessions are signed server-side and expire after 8 hours.
+- Operator password values are not shipped to the browser.
+- Every admin API action is audited with the logged-in operator.
 - Service-role credentials stay server-side.
 - Private abstract files are served through expiring signed URLs.
 - Admin records remain available for operator metadata and audit trails.
