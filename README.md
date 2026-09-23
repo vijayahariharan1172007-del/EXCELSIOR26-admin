@@ -15,7 +15,7 @@ Deploy the repository to Netlify with:
 - Publish directory: `dist`
 - Functions directory: `netlify/functions`
 
-Set the server-only variables in Netlify's Functions environment scope. Do not put service/secret keys in browser variables. Netlify documents that runtime function secrets are supplied through environment variables; they are not available from `netlify.toml`. citeturn2search0
+Set the server-only variables in Netlify's Functions environment scope. Do not put service/secret keys in browser variables. Netlify documents that runtime function secrets are supplied through environment variables; they are not available from `netlify.toml`.
 
 ## Implemented
 - Supabase Auth admin sign-in.
@@ -30,5 +30,5 @@ Set the server-only variables in Netlify's Functions environment scope. Do not p
 - Audit records in `admin_audit`.
 - Responsive desktop/mobile admin shell.
 
-Supabase recommends server-only use of secret/service keys and authenticated server functions for privileged work. citeturn0search2turn1search2
+Supabase recommends server-only use of secret/service keys and authenticated server functions for privileged work.
 
