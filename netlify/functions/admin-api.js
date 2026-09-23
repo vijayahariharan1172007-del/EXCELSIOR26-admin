@@ -71,6 +71,13 @@ exports.handler=async(event)=>{
    const ins=await s.from('admin_accounts').insert({email,display_name:display,enabled:true,created_by:ctx.admin.email}).select('id,email,display_name,enabled').single();if(ins.error)throw ins.error;
    await audit(ctx,'admin_create',{email,display_name:display});return json(200,{ok:true,data:ins.data});
   }
+  if(action==='brochure_upload'){
+   const dataUrl=String(body.data_url||'');const name=String(body.name||'brochure.pdf');
+   if(!/^data:application\\/pdf;base64,/.test(dataUrl))return json(400,{ok:false,error:'Only PDF files are accepted'});
+   const raw=Buffer.from(dataUrl.split(',')[1],'base64');if(raw.length>50*1024*1024)return json(413,{ok:false,error:'Brochure exceeds the 50 MB limit'});
+   const path='brochure/excelsior26-brochure.pdf';const r=await s.storage.from('excelsior-brochure').upload(path,raw,{contentType:'application/pdf',upsert:true,cacheControl:'3600'});if(r.error)throw r.error;
+   const pub=s.storage.from('excelsior-brochure').getPublicUrl(path);await audit(ctx,'brochure_replaced',{name,path,size:raw.length,url:pub.data.publicUrl});return json(200,{ok:true,url:pub.data.publicUrl});
+  }
   if(action==='qr_prepare'){
    const ids=Array.isArray(body.master_ids)?body.master_ids.map(String):[];if(!ids.length)return json(400,{ok:false,error:'No recipients selected'});
    const people=await s.from('master_registrations').select('master_id,full_name,email').in('id',ids);if(people.error)throw people.error;
