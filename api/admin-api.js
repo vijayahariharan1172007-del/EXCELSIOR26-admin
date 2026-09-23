@@ -8,15 +8,19 @@ export default async function handler(request){
     const ownerActions=new Set(['admin_create','admin_toggle']);
     const ctx=await requireAdmin(request,ownerActions.has(action)?'owner':'admin');
     const s=ctx.supabase;
+    await audit(ctx,'api_action',{action});
 
     if(action==='overview'){
+      
       const names=['master_registrations','event_registrations','abstract_submissions','qr_verifications'];
       const counts=await Promise.all(names.map(t=>s.from(t).select('*',{count:'exact',head:true})));
       const events=await s.from('event_registrations').select('event,event_key,status,payment_status').limit(1000);
-      return response(200,{ok:true,counts:counts.map(x=>x.count||0),events:events.data||[]});
+      return response(200,{ok:true,counts:counts.map(x=>x.count||0),events:events.data||[],admin:ctx.admin});
     }
 
-    const reads={master_list:'master_registrations',event_list:'event_registrations',abstract_list:'abstract_submissions',profiles:'master_registrations',admins:'admin_accounts',site_content:'site_content',event_config:'registration_portals',team_members:'event_team_members',qr_queue:'qr_gmail_queue',qr_logs:'qr_verifications'};
+    const reads={admin_credentials:'admin_accounts',brochure_info:'site_content',master_list:'master_registrations',event_list:'event_registrations',abstract_list:'abstract_submissions',profiles:'master_registrations',admins:'admin_accounts',site_content:'site_content',event_config:'registration_portals',team_members:'event_team_members',qr_queue:'qr_gmail_queue',qr_logs:'qr_verifications'};
+    if(action==='admin_credentials'){ return response(200,{ok:true,data:[{username:'exc26admin01',display_name:'EXCELSIOR Admin 01',role:'owner'},{username:'exc26admin02',display_name:'EXCELSIOR Admin 02',role:'admin'},{username:'exc26admin03',display_name:'EXCELSIOR Admin 03',role:'admin'},{username:'exc26admin04',display_name:'EXCELSIOR Admin 04',role:'admin'},{username:'exc26admin05',display_name:'EXCELSIOR Admin 05',role:'admin'},{username:'exc26admin06',display_name:'EXCELSIOR Admin 06',role:'admin'},{username:'exc26admin07',display_name:'EXCELSIOR Admin 07',role:'admin'},{username:'exc26admin08',display_name:'EXCELSIOR Admin 08',role:'admin'},{username:'exc26admin09',display_name:'EXCELSIOR Admin 09',role:'admin'},{username:'exc26admin10',display_name:'EXCELSIOR Admin 10',role:'admin'}]}); }
+    if(action==='brochure_info'){ const url=s.storage.from('excelsior-brochure').getPublicUrl('brochure/excelsior26-brochure.pdf'); return response(200,{ok:true,url:url.data.publicUrl}); }
     if(reads[action]){
       const table=reads[action];
       let q=s.from(table).select('*').limit(1000);
