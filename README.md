@@ -1,13 +1,34 @@
 # EXCELSIOR'26 Admin Portal
 
-Fresh professional admin console for the shared Supabase backend.
+Fresh professional admin console for the EXCELSIOR'26 shared Supabase backend.
 
 ## Local setup
-npm install
-copy .env.example to .env.local
-set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY
-npm run dev
+1. npm install
+2. Copy .env.example to .env.local
+3. Set the Vite Supabase URL and publishable key.
+4. For local protected functions, also provide the server-only variables.
+5. npm run dev
 
-The browser uses only the Supabase publishable key. Privileged operations belong in protected Netlify Functions and must independently verify the Supabase session and admin_accounts authorization.
+## Production
+Deploy the repository to Netlify with:
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Functions directory: `netlify/functions`
 
-Contact edits target the shared site_content records consumed by the participant portal. QR Gmail provides bulk selection, Select All/Clear All, templates and QR preview; final delivery belongs in a protected server function.
+Set the server-only variables in Netlify's Functions environment scope. Do not put service/secret keys in browser variables. Netlify documents that runtime function secrets are supplied through environment variables; they are not available from `netlify.toml`. citeturn2search0
+
+## Implemented
+- Supabase Auth admin sign-in.
+- Server-side admin authorization against `admin_accounts`.
+- Protected registration, payment and abstract review actions.
+- Shared Contact content editing.
+- Event configuration editing.
+- PDF-only brochure replacement in the existing `excelsior-brochure` bucket.
+- QR credential preparation, bulk queueing and protected Gmail delivery.
+- Real browser camera QR scanning with manual-token fallback.
+- Owner-only admin invitations with a maximum of 10 enabled admins.
+- Audit records in `admin_audit`.
+- Responsive desktop/mobile admin shell.
+
+Supabase recommends server-only use of secret/service keys and authenticated server functions for privileged work. citeturn0search2turn1search2
+
