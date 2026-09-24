@@ -26,7 +26,8 @@ async function login(username){
 function logout(){currentOperator='';sessionStorage.removeItem('exc26_operator');authLost()}
 
 async function call(action,payload={}){
- const r=await fetch('/api/admin-api',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,username:currentOperator,...payload})});
+ const endpoint=action==='overview'?'/api/admin-overview':'/api/admin-api';
+ const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,username:currentOperator,...payload})});
  const raw=await r.text();
  let j={};
  try{j=raw?JSON.parse(raw):{}}catch(_e){}
