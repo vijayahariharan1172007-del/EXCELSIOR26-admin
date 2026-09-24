@@ -7,6 +7,11 @@ export default async function handler(request){
     const action=String(body.action||'');
     const ctx=await identifyAdmin(request,body.username);
     const s=ctx.supabase;
+    if(action==='page_view'){
+      await audit(ctx,'page_view',{page:body.page||null});
+      return response(200,{ok:true,admin:ctx.admin});
+    }
+    if(!s) return response(503,{ok:false,error:'Supabase server connection is not configured. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in the Vercel project environment, then redeploy.'});
     await audit(ctx,'api_action',{action});
 
     if(action==='overview'){
