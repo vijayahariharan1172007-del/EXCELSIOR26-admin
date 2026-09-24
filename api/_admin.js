@@ -13,7 +13,7 @@ const USERS=[
   {username:'exc26admin10',display_name:'EXCELSIOR Admin 10',role:'admin'}
 ];
 
-export function client(url,key){return createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});}
+export function client(url,key,operator=''){return createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},global:{headers:operator?{'x-operator':operator}:{}}});}
 export function response(status,body,headers={}){return new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store',...headers}});}
 function env(){
   const url=String(process.env.SUPABASE_URL||'https://rhglnkldrydvrfnrxirg.supabase.co').trim();
