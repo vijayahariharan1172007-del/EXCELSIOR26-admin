@@ -1,12 +1,11 @@
-import { response,requireAdmin,audit,methodGuard } from './_admin.js';
+import { response,identifyAdmin,audit,methodGuard } from './_admin.js';
 
 export default async function handler(request){
   const bad=methodGuard(request); if(bad) return bad;
   try{
     const body=await request.json().catch(()=>({}));
     const action=String(body.action||'');
-    const ownerActions=new Set(['admin_create','admin_toggle']);
-    const ctx=await requireAdmin(request,ownerActions.has(action)?'owner':'admin');
+    const ctx=await identifyAdmin(request,body.username);
     const s=ctx.supabase;
     await audit(ctx,'api_action',{action});
 
