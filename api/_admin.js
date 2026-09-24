@@ -26,13 +26,16 @@ export function verifySession(token){if(!token)return null;const[body,sig]=Strin
 export function findAdminUser(username,password){const u=USERS.find(x=>x.username===String(username||'').trim());if(!u)return null;const hash=crypto.createHash('sha256').update(String(password||'')).digest('hex');return crypto.timingSafeEqual(Buffer.from(hash),Buffer.from(u.hash))?u:null;}
 export function credentialList(){return USERS.map(({username,display_name,role})=>({username,display_name,role}));}
 
-export async function requireAdmin(request,minimum='admin'){
-  const auth=String(request.headers.get('authorization')||'');const token=auth.startsWith('Bearer ')?auth.slice(7):'';const user=verifySession(token);
-  if(!user)throw Object.assign(new Error('Admin session required.'),{status:401});
-  if(minimum==='owner'&&user.role!=='owner')throw Object.assign(new Error('Owner authorization is required.'),{status:403});
-  const c=env(),s=client(c.url,c.key);const{data:first,error}=await s.from('admin_accounts').select('id,email,display_name,enabled,created_at,phone').eq('enabled',true).order('created_at',{ascending:true}).limit(1).maybeSingle();
+export async function identifyAdmin(request,username){
+  const name=String(username||'').trim();
+  const user=USERS.find(x=>x.username===name);
+  if(!user)throw Object.assign(new Error('Select a valid operator account.'),{status:400});
+  const c=env(),s=client(c.url,c.key);
+  const {data:first,error}=await s.from('admin_accounts').select('id,email,display_name,enabled,created_at,phone').eq('enabled',true).order('created_at',{ascending:true}).limit(1).maybeSingle();
   if(error)throw error;
-  const admin={username:user.username,display_name:user.display_name,role:user.role,email:user.username+'@excelsior26.local',phone:first?.phone||'',id:first?.id||null,enabled:true};return{admin,supabase:s,role:user.role};
+  const admin={username:user.username,display_name:user.display_name,role:user.role,email:user.username+'@excelsior26.local',phone:first?.phone||'',id:first?.id||null,enabled:true};
+  return{admin,supabase:s,role:user.role};
 }
+
 export async function audit(ctx,action,meta={}){await ctx.supabase.from('admin_audit').insert({admin_phone:ctx.admin.phone||'',actor_name:ctx.admin.display_name||'',actor_email:ctx.admin.email||'',action,meta:{...meta,username:ctx.admin.username||null}});}
 export function methodGuard(request,method='POST'){if(request.method!==method)return response(405,{ok:false,error:method+' required'});return null;}
