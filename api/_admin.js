@@ -20,12 +20,17 @@ export async function identifyAdmin(request,username){
   const name=String(username||'').trim();
   const user=USERS.find(x=>x.username===name);
   if(!user)throw Object.assign(new Error('Select a valid operator account.'),{status:400});
-  const c=env(),s=client(c.url,c.key);
-  const {data:first,error}=await s.from('admin_accounts').select('id,email,display_name,enabled,created_at,phone').eq('enabled',true).order('created_at',{ascending:true}).limit(1).maybeSingle();
-  if(error)throw error;
-  const admin={username:user.username,display_name:user.display_name,role:user.role,email:user.username+'@excelsior26.local',phone:first?.phone||'',id:first?.id||null,enabled:true};
+  // Operator entry is intentionally independent of Supabase. The console must
+  // transition immediately; Supabase is used only for optional activity logging.
+  let s=null;
+  try{const c=env();s=client(c.url,c.key);}catch(_e){}
+  const admin={username:user.username,display_name:user.display_name,role:user.role,email:user.username+'@excelsior26.local',phone:'',id:null,enabled:true};
   return{admin,supabase:s,role:user.role};
 }
 
-export async function audit(ctx,action,meta={}){await ctx.supabase.from('admin_audit').insert({admin_phone:ctx.admin.phone||'',actor_name:ctx.admin.display_name||'',actor_email:ctx.admin.email||'',action,meta:{...meta,username:ctx.admin.username||null}});}
+export async function audit(ctx,action,meta={}){
+  if(!ctx?.supabase)return;
+  const write=ctx.supabase.from('admin_audit').insert({admin_phone:ctx.admin.phone||'',actor_name:ctx.admin.display_name||'',actor_email:ctx.admin.email||'',action,meta:{...meta,username:ctx.admin.username||null}});
+  await Promise.race([write,new Promise(resolve=>setTimeout(resolve,1500))]);
+}
 export function methodGuard(request,method='POST'){if(request.method!==method)return response(405,{ok:false,error:method+' required'});return null;}
