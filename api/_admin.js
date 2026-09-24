@@ -36,7 +36,7 @@ export async function identifyAdmin(request,username){
 export async function audit(ctx,action,meta={}){
   if(!ctx?.supabase)return;
   try{
-    const write=ctx.supabase.from('admin_audit').insert({admin_phone:ctx.admin.phone||'',actor_name:ctx.admin.display_name||'',actor_email:ctx.admin.email||'',action,meta:{...meta,username:ctx.admin.username||null}});
+    const write=ctx.supabase.from('admin_audit').insert({admin_phone:ctx.admin.phone||'',actor_name:ctx.admin.display_name||'',actor_email:ctx.admin.email||'',action,meta:{...meta,username:ctx.admin.username||null}}).setHeader('x-operator',ctx.admin.username);
     await Promise.race([write,new Promise(resolve=>setTimeout(resolve,1500))]).catch(()=>{});
   }catch(_e){}
 }
