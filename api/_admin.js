@@ -15,7 +15,12 @@ const USERS=[
 
 export function client(url,key){return createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});}
 export function response(status,body,headers={}){return new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store',...headers}});}
-function env(){const url=String(process.env.SUPABASE_URL||'').trim();const key=String(process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.SUPABASE_SECRET_KEY||'').trim();if(!url||!key)throw new Error('Server Supabase credentials are not configured.');return{url,key};}
+function env(){
+  const url=String(process.env.SUPABASE_URL||'https://rhglnkldrydvrfnrxirg.supabase.co').trim();
+  const key=String(process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.SUPABASE_SECRET_KEY||process.env.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_DwN_VcnzkBqiABMr_1Sr_A_jhvJbASB').trim();
+  if(!url||!key)throw new Error('Supabase connection is not configured.');
+  return{url,key};
+}
 export async function identifyAdmin(request,username){
   const name=String(username||'').trim();
   const user=USERS.find(x=>x.username===name);
@@ -23,7 +28,7 @@ export async function identifyAdmin(request,username){
   // Operator entry is intentionally independent of Supabase. The console must
   // transition immediately; Supabase is used only for optional activity logging.
   let s=null;
-  try{const c=env();s=client(c.url,c.key);}catch(_e){}
+  try{const c=env();s=client(c.url,c.key,name);}catch(_e){}
   const admin={username:user.username,display_name:user.display_name,role:user.role,email:user.username+'@excelsior26.local',phone:'',id:null,enabled:true};
   return{admin,supabase:s,role:user.role};
 }
