@@ -11,12 +11,19 @@ function csvValue(v){return '"'+String(v??'').replaceAll('"','""')+'"'}
 function downloadBlob(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 async function downloadPageData(page){const action=EXPORT_ACTION[page];if(!action)return;const j=await call(action);if(page==='brochure'){if(j.url)window.open(j.url,'_blank','noopener,noreferrer');return}const rows=j.data||j.events||j.counts||[];const list=Array.isArray(rows)?rows:(rows&&typeof rows==='object'?[rows]:[]);if(!list.length){downloadBlob(new Blob(['No records found.'],{type:'text/plain'}),page+'-export.txt');return}const keys=[...new Set(list.flatMap(x=>Object.keys(x||{})))];const csv=[keys.join(','),...list.map(x=>keys.map(k=>csvValue(x[k])).join(','))].join('\n');downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),`excelsior26-${page}-export.csv`)}
 async function login(username){
- const r=await fetch('/api/admin-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username})});
- const j=await r.json().catch(()=>({}));
- if(!r.ok||!j.ok)throw new Error(j.error||'Operator entry failed');
- currentOperator=j.admin.username;
- sessionStorage.setItem('exc26_operator',currentOperator);
- return j.admin;
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),5000);
+ try{
+  const r=await fetch('/api/admin-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username}),signal:controller.signal});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||!j.ok)throw new Error(j.error||'Operator entry failed');
+  currentOperator=j.admin.username;
+  sessionStorage.setItem('exc26_operator',currentOperator);
+  return j.admin;
+ }catch(e){
+  if(e.name==='AbortError')throw new Error('Operator entry timed out. Please refresh once the latest deployment is live.');
+  throw e;
+ }finally{clearTimeout(timer)}
 }
 function logout(){currentOperator='';sessionStorage.removeItem('exc26_operator');authLost()}
 
