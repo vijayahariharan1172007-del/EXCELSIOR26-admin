@@ -2,15 +2,15 @@ import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 const USERS=[
-  {username:'exc26admin01',hash:'d6524f41c9d907d65e1a9341a15cbd60e426ec95bfb06ff0791db61513210e62',display_name:'EXCELSIOR Admin 01',role:'owner'},
-  {username:'exc26admin02',hash:'37f802419153f8c70ef3394f7ee8f2f1a23070cc64975384c4c4e5916e2c9525',display_name:'EXCELSIOR Admin 02',role:'admin'},
-  {username:'exc26admin03',hash:'ce6aed8668476eb9646c294addf52fd2806a1acd79fbceff98374c2116d02d37',display_name:'EXCELSIOR Admin 03',role:'admin'},
-  {username:'exc26admin04',hash:'97c9ae7003caa4786e0c032be512ba7972b9d831c14f05667736506d9aa07537',display_name:'EXCELSIOR Admin 04',role:'admin'},
-  {username:'exc26admin05',hash:'5b8d6e4804fc9892f21ee755358f105f8b316b7b582452a849686c6034c4d042',display_name:'EXCELSIOR Admin 05',role:'admin'},
-  {username:'exc26admin06',hash:'748610c0a85b8149154fede8de679965b68408aed7bbb7387194f52a17abd0de',display_name:'EXCELSIOR Admin 06',role:'admin'},
-  {username:'exc26admin07',hash:'144d70e431ff4d5d3e8445990c0a4a674b097c7574777e0b2aeb33135afd4d5b',display_name:'EXCELSIOR Admin 07',role:'admin'},
-  {username:'exc26admin08',hash:'de9812f9491e986bfa1f3ac509daea95835d59e3e948891ba7e911c13f213e0f',display_name:'EXCELSIOR Admin 08',role:'admin'},
-  {username:'exc26admin09',hash:'571024835ea240a655be9dfca7f199e7905ce89cc08956f8efd4c3ad66e89fdc',display_name:'EXCELSIOR Admin 09',role:'admin'},
+  {username:'exc26admin01',hash:'a287138ab8fd09bcff9810544339124e94a51e32d720420dc5c2d4a294c21ce5',display_name:'EXCELSIOR Admin 01',role:'owner'},
+  {username:'exc26admin02',hash:'29102f9b435ef342b10228fb2e7978f834706918616c895f270d1edbe81066c7',display_name:'EXCELSIOR Admin 02',role:'admin'},
+  {username:'exc26admin03',hash:'ac50c4a79071c431130cedb8f067a0c0d2ef223229b2266b7d0d1ea30aec2fed',display_name:'EXCELSIOR Admin 03',role:'admin'},
+  {username:'exc26admin04',hash:'2153be43cfda8cdeaa61b6da445cb66a175af1d61971916faeb866e7d13d2717',display_name:'EXCELSIOR Admin 04',role:'admin'},
+  {username:'exc26admin05',hash:'538cfcbad98661af7820706a6e1d3e9e98fda9f815e9f9de806c1a88c2276737',display_name:'EXCELSIOR Admin 05',role:'admin'},
+  {username:'exc26admin06',hash:'ac353ec2bc5b9f5feb043738ff79f800a86b94a35c1189646db23e891a1ce55f',display_name:'EXCELSIOR Admin 06',role:'admin'},
+  {username:'exc26admin07',hash:'70aa121feded6b6abe96dc39115563c066643b1e932226ac4baa00ba5fea1dad',display_name:'EXCELSIOR Admin 07',role:'admin'},
+  {username:'exc26admin08',hash:'f902cd404572ae2726b3b07685838f55e4cd6a5ab88395fa0491684885ea140f',display_name:'EXCELSIOR Admin 08',role:'admin'},
+  {username:'exc26admin09',hash:'d709e36544589300ab24f3fa4f9a74f2e420ec7235cf163b80fb6a38b128d111',display_name:'EXCELSIOR Admin 09',role:'admin'},
   {username:'exc26admin10',hash:'234d5cff437a3ecc266c24eea2facc34d096de5e0c13c05e83c31c59fbb9779b',display_name:'EXCELSIOR Admin 10',role:'admin'}
 ];
 
