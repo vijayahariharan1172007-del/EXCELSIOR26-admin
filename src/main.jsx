@@ -27,8 +27,13 @@ function logout(){currentOperator='';sessionStorage.removeItem('exc26_operator')
 
 async function call(action,payload={}){
  const r=await fetch('/api/admin-api',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,username:currentOperator,...payload})});
- const j=await r.json().catch(()=>({}));
- if(!r.ok||!j.ok)throw new Error(j.error||'Admin request failed');
+ const raw=await r.text();
+ let j={};
+ try{j=raw?JSON.parse(raw):{}}catch(_e){}
+ if(!r.ok||!j.ok){
+   const detail=j.error||raw||('HTTP '+r.status+' '+r.statusText);
+   throw new Error('Admin API '+action+' failed ('+r.status+'): '+detail);
+ }
  return j;
 }
 function Console({admin}){const[page,setPage]=useState('overview');useEffect(()=>{call('page_view',{page})},[page]);return <div className="app"><aside><div className="brand">EXCELSIOR<span>'26</span><small>ADMIN CONSOLE</small></div><nav>{NAV.map(x=><button className={page===x[0]?'active':''} onClick={()=>setPage(x[0])} key={x[0]}><b>{x[0].slice(0,1).toUpperCase()}</b>{x[1]}</button>)}</nav><div className="user"><strong>{admin.display_name||'Administrator'}</strong><small>{admin.email}</small></div></aside><main><header><div><small className="kicker">EXCELSIOR'26 / CONTROL CENTER</small><h2>{NAV.find(x=>x[0]===page)[1]}</h2></div><div className="header-actions"><button className="download-btn" onClick={()=>downloadPageData(page)}>⇩ Download</button>{page==='credentials'&&<button className="download-btn" onClick={async()=>{try{const r=await fetch('/api/admin-credentials-pdf',{headers:{'x-operator':currentOperator}});if(!r.ok)throw new Error(await r.text());downloadBlob(await r.blob(),'EXCELSIOR26_Admin_Credentials.pdf')}catch(e){alert(e.message)}}}>⇩ Credentials PDF</button>}<button className="lock-btn" onClick={logout}>Lock</button><span className="online">● {admin.display_name||'Admin'}</span></div></header><div className="content"><Page page={page} admin={admin}/></div></main><div className="bottom">{NAV.slice(0,5).map(x=><button className={page===x[0]?'active':''} onClick={()=>setPage(x[0])} key={x[0]}>{x[1].split(' ')[0]}</button>)}</div></div>}
