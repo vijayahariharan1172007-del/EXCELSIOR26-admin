@@ -17,8 +17,8 @@ export default async function handler(request){
     if(action==='overview'){
       
       const names=['master_registrations','event_registrations','abstract_submissions','qr_verifications'];
-      const counts=await Promise.all(names.map(t=>s.from(t).select('*',{count:'exact',head:true})));
-      const events=await s.from('event_registrations').select('event,event_key,status,payment_status').limit(1000);
+      const counts=await Promise.all(names.map(t=>s.from(t).select('*',{count:'exact',head:true}).setHeader('x-operator',ctx.admin.username)));
+      const events=await s.from('event_registrations').select('event,event_key,status,payment_status').setHeader('x-operator',ctx.admin.username).limit(1000);
       return response(200,{ok:true,counts:counts.map(x=>x.count||0),events:events.data||[],admin:ctx.admin});
     }
 
