@@ -23,7 +23,7 @@ function config(){
 
 async function rest(url,key,operator,path,options={}){
   const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),8000);
+  const timer=setTimeout(()=>controller.abort(),5000);
   try{
     const headers={
       apikey:key,
@@ -51,7 +51,7 @@ function countFrom(response){
   return Number.isFinite(n)?n:0;
 }
 
-export default async function handler(request){
+export async function POST(request){
   console.log('ADMIN_OVERVIEW_INVOKED',request.method);
   if(request.method!=='POST') return json(405,{ok:false,error:'POST required'});
   try{
@@ -64,14 +64,11 @@ export default async function handler(request){
     const {url,key}=config();
     console.log('ADMIN_OVERVIEW_CONFIGURED',url);
     const names=['master_registrations','event_registrations','abstract_submissions','qr_verifications'];
-    const counts=[];
-    for(const table of names){
-      const r=await rest(url,key,operator,table+'?select=id&limit=1',{
-        method:'GET',
-        headers:{Prefer:'count=exact'}
-      });
-      counts.push(countFrom(r.response));
-    }
+    const countResults=await Promise.all(names.map(table=>rest(url,key,operator,table+'?select=id&limit=1',{
+      method:'GET',
+      headers:{Prefer:'count=exact'}
+    })));
+    const counts=countResults.map(r=>countFrom(r.response));
 
     const events=await rest(
       url,key,operator,
