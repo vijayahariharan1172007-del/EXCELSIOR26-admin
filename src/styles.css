@@ -5,3 +5,5 @@
 @media(max-width:760px){.header-actions{justify-content:flex-end}.download-btn,.lock-btn{padding:8px 7px;font-size:11px}}
 
 .event-filter-tabs{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 14px;padding:4px;border:1px solid #202a40;border-radius:10px;background:#0b111e}.event-filter-tabs button{border:1px solid #27334b;background:#101728;color:#8290aa;padding:9px 12px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:.04em}.event-filter-tabs button.sel{background:#23345f;border-color:#526fce;color:#e7edff}.event-filter-tabs button:hover{border-color:#526fce;color:#dfe7ff}@media(max-width:760px){.event-filter-tabs{overflow-x:auto;flex-wrap:nowrap}.event-filter-tabs button{flex:0 0 auto}}
+
+.change-password{margin-top:22px;padding:18px;border:1px solid #26324b;border-radius:12px;background:#0b111e}.change-password h4{font:600 16px 'Space Grotesk',sans-serif;margin:0 0 6px}.change-password .muted{margin:0 0 12px}.change-password>.primary{margin-top:6px}
