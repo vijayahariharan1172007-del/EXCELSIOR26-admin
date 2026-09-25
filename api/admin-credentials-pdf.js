@@ -16,7 +16,7 @@ export default async function handler(request){
     const doc=await PDFDocument.create(),font=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
     let page=doc.addPage([595,842]),y=790;
     page.drawText("EXCELSIOR'26 Operator Register",{x:40,y,size:20,font:bold,color:rgb(.1,.15,.25)});
-    page.drawText('Operator identities only; password authentication has been removed.',{x:40,y:y-26,size:10,font});
+    page.drawText('Operator identities are password-protected. Passwords can be changed by each administrator and are never included in this PDF.',{x:40,y:y-26,size:10,font});
     y-=65;
     ['#','Username','Role'].forEach((h,i)=>page.drawText(h,{x:[35,80,210,380][i],y,size:10,font:bold}));
     y-=20;
