@@ -10,7 +10,7 @@ function json(status,body){
 }
 
 function config(){
-  const url=String(process.env.SUPABASE_URL||'https://rhglnkldrydvrfnrxirg.supabase.co').trim().replace(/\\/$/,'');
+  const url=String(process.env.SUPABASE_URL||'https://rhglnkldrydvrfnrxirg.supabase.co').trim().replace(/\/$/,'');
   const key=String(
     process.env.SUPABASE_SERVICE_ROLE_KEY||
     process.env.SUPABASE_SECRET_KEY||
