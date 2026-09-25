@@ -1,4 +1,5 @@
 import { response,authenticateAdmin,identifyAdmin,audit,sessionCookie,clearSessionCookie,client,verifyPasswordHash,hashPassword } from './_admin.js';
+function operatorMeta(username){const i=Number(String(username||'').replace('exc26admin',''));if(!i||i<1||i>10)return null;return{username:'exc26admin'+String(i).padStart(2,'0'),display_name:'EXCELSIOR Admin '+String(i).padStart(2,'0'),role:i===1?'owner':'admin',email:'exc26admin'+String(i).padStart(2,'0')+'@excelsior26.local',phone:'',id:null,enabled:true};}
 
 export async function POST(request){
   if(request.method!=='POST') return response(405,{ok:false,error:'POST required'});
@@ -25,8 +26,22 @@ export async function POST(request){
     const username=String(body.username||'').trim();
     const password=String(body.password||'');
     if(!username||!password)return response(400,{ok:false,error:'Username and password are required.'});
-    const user=authenticateAdmin(username,password);
-    const admin={username:user.username,display_name:user.display_name,role:user.role,email:user.username+'@excelsior26.local',phone:'',id:null,enabled:true};
+    const meta=operatorMeta(username);
+    if(!meta)return response(401,{ok:false,error:'Invalid username or password.'});
+    const url=String(process.env.SUPABASE_URL||'https://rhglnkldrydvrfnrxirg.supabase.co').trim();
+    const key=String(process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.SUPABASE_SECRET_KEY||process.env.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_DwN_VcnzkBqiABMr_1Sr_A_jhvJbASB').trim();
+    const store=client(url,key,username);
+    const stored=await store.from('admin_credentials').select('password_hash').eq('username',username).maybeSingle();
+    if(stored.error)throw Object.assign(new Error('Password store unavailable.'),{status:503});
+    let user=meta;
+    if(stored.data?.password_hash){
+      if(!verifyPasswordHash(password,stored.data.password_hash))throw Object.assign(new Error('Invalid username or password.'),{status:401});
+    }else{
+      user=authenticateAdmin(username,password);
+      const boot=await store.from('admin_credentials').insert({username,password_hash:hashPassword(password)});
+      if(boot.error)throw Object.assign(new Error('Password store could not be initialized.'),{status:503});
+    }
+    const admin=user;
     try{
       const url=String(process.env.SUPABASE_URL||'https://rhglnkldrydvrfnrxirg.supabase.co').trim();
       const key=String(process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.SUPABASE_SECRET_KEY||process.env.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_DwN_VcnzkBqiABMr_1Sr_A_jhvJbASB').trim();
