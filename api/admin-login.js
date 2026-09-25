@@ -1,6 +1,6 @@
 import { response,identifyAdmin,audit } from './_admin.js';
 
-export default async function handler(request){
+export async function POST(request){
   if(request.method!=='POST') return response(405,{ok:false,error:'POST required'});
   try{
     const body=await request.json().catch(()=>({}));
