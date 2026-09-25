@@ -5,7 +5,7 @@ import{BrowserQRCodeReader}from'@zxing/browser';
 import'./styles.css';
 
 let currentOperator=sessionStorage.getItem('exc26_operator')||''; let authLost=()=>{};
-const NAV=[['overview','Overview'],['activity','Activity Log'],['prereg','Pre-Registration'],['events','Event Registration'],['profiles','Profiles'],['abstracts','Abstracts'],['brochure','Brochure'],['contact','Contact'],['gmail','QR Gmail'],['scanner','QR Scanner'],['admins','Admin Management'],['credentials','Admin Credentials']];
+const NAV=[['overview','Overview'],['prereg','Pre-Registration'],['events','Event Registration'],['abstracts','Abstracts'],['profiles','Profiles'],['activity','Activity Log'],['credentials','Admin Credentials']];
 const EXPORT_ACTION={overview:'overview',activity:'audit_logs',prereg:'master_list',events:'event_list',profiles:'profiles',abstracts:'abstract_list',brochure:'brochure_info',contact:'site_content',gmail:'profiles',scanner:'qr_logs',admins:'admins',credentials:'admin_credentials'};
 function csvValue(v){return '"'+String(v??'').replaceAll('"','""')+'"'}
 function downloadBlob(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)}
