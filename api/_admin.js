@@ -11,7 +11,7 @@ const USERS=[
   {username:'exc26admin07',display_name:'EXCELSIOR Admin 07',role:'admin',passwordHash:'e469eb2b6b382d05a0be246aa0b39d09d0679ec25165c5af394c39cb4f519baa'},
   {username:'exc26admin08',display_name:'EXCELSIOR Admin 08',role:'admin',passwordHash:'a0999eb6278f84d2b672e4e3c68dac837cae0531eebb39d7b5e927d5d144acb1'},
   {username:'exc26admin09',display_name:'EXCELSIOR Admin 09',role:'admin',passwordHash:'0ce9a1e0a9495c103a03faff6e51ce0415f34fdfb860724fafef0a333d454064'},
-  {username:'exc26admin10',display_name:'EXCELSIOR Admin 10',role:'admin',passwordHash:'473fea8f945ed591a23c393c3311ba3d18a7232fdc5730ea19a13321065bd29'}
+  {username:'exc26admin10',display_name:'EXCELSIOR Admin 10',role:'admin',passwordHash:'473fea8f945ed5912a23c393c3311ba3d18a7232fdc5730ea19a13321065bd29'}
 ];
 
 const SESSION_COOKIE='exc26_admin_session';
