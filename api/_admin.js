@@ -2,16 +2,16 @@ import { createClient } from '@supabase/supabase-js';
 import crypto from 'node:crypto';
 
 const USERS=[
-  {username:'exc26admin01',display_name:'EXCELSIOR Admin 01',role:'owner',passwordHash:'b1583e4be22b5644276acf9d1faf845db9baed646ace9de2523365f2c3ad8854'},
-  {username:'exc26admin02',display_name:'EXCELSIOR Admin 02',role:'admin',passwordHash:'b3034c0b45c6d9947c0bd4dbd849926249cfd196cbe38e7464e9a20939cc8638'},
-  {username:'exc26admin03',display_name:'EXCELSIOR Admin 03',role:'admin',passwordHash:'58a7ed52595422ec94f9052794e99e7f913119a2e0e252ec83198ad4ba0da39d'},
-  {username:'exc26admin04',display_name:'EXCELSIOR Admin 04',role:'admin',passwordHash:'fe1440a2ea075cae75af051056e355123d7ef7406f409bd91202b45d5d468b9e'},
-  {username:'exc26admin05',display_name:'EXCELSIOR Admin 05',role:'admin',passwordHash:'0f49922874bd68acf7938da5d55b5883f6d30693641006b2bbf6f619c943061a'},
-  {username:'exc26admin06',display_name:'EXCELSIOR Admin 06',role:'admin',passwordHash:'c69e4d7ee60301f5765344e2a3e220bd9dbc39b0520360d1f675ee1df44d84d9'},
-  {username:'exc26admin07',display_name:'EXCELSIOR Admin 07',role:'admin',passwordHash:'e469eb2b6b382d05a0be246aa0b39d09d0679ec25165c5af394c39cb4f519baa'},
-  {username:'exc26admin08',display_name:'EXCELSIOR Admin 08',role:'admin',passwordHash:'a0999eb6278f84d2b672e4e3c68dac837cae0531eebb39d7b5e927d5d144acb1'},
-  {username:'exc26admin09',display_name:'EXCELSIOR Admin 09',role:'admin',passwordHash:'0ce9a1e0a9495c103a03faff6e51ce0415f34fdfb860724fafef0a333d454064'},
-  {username:'exc26admin10',display_name:'EXCELSIOR Admin 10',role:'admin',passwordHash:'473fea8f945ed5912a23c393c3311ba3d18a7232fdc5730ea19a13321065bd29'}
+  {username:'exc26admin01',display_name:'Vijayahariharan',role:'owner',passwordHash:'b1583e4be22b5644276acf9d1faf845db9baed646ace9de2523365f2c3ad8854'},
+  {username:'exc26admin02',display_name:'Thangalakshmi',role:'admin',passwordHash:'b3034c0b45c6d9947c0bd4dbd849926249cfd196cbe38e7464e9a20939cc8638'},
+  {username:'exc26admin03',display_name:'Prabhanjani',role:'admin',passwordHash:'58a7ed52595422ec94f9052794e99e7f913119a2e0e252ec83198ad4ba0da39d'},
+  {username:'exc26admin04',display_name:'Arundhathi',role:'admin',passwordHash:'fe1440a2ea075cae75af051056e355123d7ef7406f409bd91202b45d5d468b9e'},
+  {username:'exc26admin05',display_name:'Sujay',role:'admin',passwordHash:'0f49922874bd68acf7938da5d55b5883f6d30693641006b2bbf6f619c943061a'},
+  {username:'exc26admin06',display_name:'Sriraam',role:'admin',passwordHash:'c69e4d7ee60301f5765344e2a3e220bd9dbc39b0520360d1f675ee1df44d84d9'},
+  {username:'exc26admin07',display_name:'Thejeswini',role:'admin',passwordHash:'e469eb2b6b382d05a0be246aa0b39d09d0679ec25165c5af394c39cb4f519baa'},
+  {username:'exc26admin08',display_name:'Dr. Rajukumaran — Faculty',role:'admin',passwordHash:'a0999eb6278f84d2b672e4e3c68dac837cae0531eebb39d7b5e927d5d144acb1'},
+  {username:'exc26admin09',display_name:'Admin 09',role:'admin',passwordHash:'0ce9a1e0a9495c103a03faff6e51ce0415f34fdfb860724fafef0a333d454064'},
+  {username:'exc26admin10',display_name:'Admin 10',role:'admin',passwordHash:'473fea8f945ed5912a23c393c3311ba3d18a7232fdc5730ea19a13321065bd29'}
 ];
 
 const SESSION_COOKIE='exc26_admin_session';
