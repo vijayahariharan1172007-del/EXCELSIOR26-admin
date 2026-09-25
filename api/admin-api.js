@@ -37,11 +37,11 @@ if(action==='payment_settings'){
       if(!/^((https?:\\/\\/)|data:image\\/(png|jpeg|webp);base64,)/i.test(qr)) return response(400,{ok:false,error:'Payment QR must be an image URL or PNG/JPG/WebP image.'});
       if(qr.startsWith('data:')&&qr.length>1400000) return response(413,{ok:false,error:'QR image is too large. Keep it under 1 MB.'});
       const content=JSON.stringify({upi_id:upi,qr});
-      const existing=await s.from('site_content').select('id').eq('key','payment_settings').maybeSingle();
+      const existing=await s.from('site_content').select('key').eq('key','payment_settings').maybeSingle();
       if(existing.error) throw existing.error;
       let r;
-      if(existing.data?.id){
-        r=await s.from('site_content').update({title:'Payment Settings',content,enabled:true,updated_at:new Date().toISOString()}).eq('id',existing.data.id).select('*').maybeSingle();
+      if(existing.data?.key){
+        r=await s.from('site_content').update({title:'Payment Settings',content,enabled:true,updated_at:new Date().toISOString()}).eq('key','payment_settings').select('*').maybeSingle();
       }else{
         r=await s.from('site_content').insert({key:'payment_settings',title:'Payment Settings',content,enabled:true}).select('*').maybeSingle();
       }
