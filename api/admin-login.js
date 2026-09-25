@@ -1,4 +1,7 @@
-import { response,authenticateAdmin,identifyAdmin,audit,sessionCookie,clearSessionCookie,client,verifyPasswordHash,hashPassword } from './_admin.js';
+import crypto from 'node:crypto';
+import { response,authenticateAdmin,identifyAdmin,audit,sessionCookie,clearSessionCookie,client } from './_admin.js';
+function hashPassword(password){return crypto.createHash('sha256').update(String(password)).digest('hex')}
+function verifyPasswordHash(password,passwordHash){const a=Buffer.from(hashPassword(password)),b=Buffer.from(String(passwordHash||''));return a.length===b.length&&crypto.timingSafeEqual(a,b)}
 function operatorMeta(username){const i=Number(String(username||'').replace('exc26admin',''));if(!i||i<1||i>10)return null;return{username:'exc26admin'+String(i).padStart(2,'0'),display_name:'EXCELSIOR Admin '+String(i).padStart(2,'0'),role:i===1?'owner':'admin',email:'exc26admin'+String(i).padStart(2,'0')+'@excelsior26.local',phone:'',id:null,enabled:true};}
 
 export async function POST(request){
