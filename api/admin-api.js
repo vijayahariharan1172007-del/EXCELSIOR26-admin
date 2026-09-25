@@ -38,41 +38,41 @@ export async function POST(request){
       if(!['approved','rejected','pending'].includes(status)) return response(400,{ok:false,error:'Invalid registration status'});
       const patch={pre_registration_status:status,pre_approved_at:status==='pending'?null:new Date().toISOString(),pre_approved_by:status==='pending'?null:ctx.admin.email};
       const r=await s.from('master_registrations').update(patch).eq('id',id).select('id,master_id,pre_registration_status').maybeSingle();
-      if(r.error) throw r.error; await audit(ctx,'master_review',{id,status}); return response(200,{ok:true,data:r.data});
+      if(r.error) throw r.error; await audit(ctx,'master_review',{id,status,master_id:r.data?.master_id||null}); return response(200,{ok:true,data:r.data});
     }
 
     if(action==='event_review'){
       const id=String(body.id),status=String(body.status);
       if(!['approved','rejected','pending'].includes(status)) return response(400,{ok:false,error:'Invalid event status'});
       const patch={status,admin_reviewed_at:status==='pending'?null:new Date().toISOString(),admin_reviewed_by:status==='pending'?null:ctx.admin.email};
-      const r=await s.from('event_registrations').update(patch).eq('id',id).select('id,status,event_key,master_id').maybeSingle();
-      if(r.error) throw r.error; await audit(ctx,'event_review',{id,status}); return response(200,{ok:true,data:r.data});
+      const r=await s.from('event_registrations').update(patch).eq('id',id).select('id,status,event_key,master_id,event,team_id').maybeSingle();
+      if(r.error) throw r.error; await audit(ctx,'event_review',{id,status,master_id:r.data?.master_id||null,event_key:r.data?.event_key||null,event:r.data?.event||null,team_id:r.data?.team_id||null}); return response(200,{ok:true,data:r.data});
     }
 
     if(action==='payment_review'){
       const id=String(body.id),status=String(body.status);
       if(!['approved','rejected','pending'].includes(status)) return response(400,{ok:false,error:'Invalid payment status'});
-      const r=await s.from('event_registrations').update({payment_status:status,admin_reviewed_at:new Date().toISOString(),admin_reviewed_by:ctx.admin.email}).eq('id',id).select('id,payment_status').maybeSingle();
-      if(r.error) throw r.error; await audit(ctx,'event_payment_review',{id,status}); return response(200,{ok:true,data:r.data});
+      const r=await s.from('event_registrations').update({payment_status:status,admin_reviewed_at:new Date().toISOString(),admin_reviewed_by:ctx.admin.email}).eq('id',id).select('id,payment_status,master_id,event_key,event,team_id').maybeSingle();
+      if(r.error) throw r.error; await audit(ctx,'event_payment_review',{id,status,master_id:r.data?.master_id||null,event_key:r.data?.event_key||null,event:r.data?.event||null,team_id:r.data?.team_id||null}); return response(200,{ok:true,data:r.data});
     }
 
     if(action==='abstract_review'){
       const id=String(body.id),status=String(body.status);
       if(!['submitted','under_review','approved','rejected','resubmission_required'].includes(status)) return response(400,{ok:false,error:'Invalid abstract status'});
-      const r=await s.from('abstract_submissions').update({status,reviewed_at:new Date().toISOString(),reviewed_by:ctx.admin.email,rejection_reason:body.reason||null,updated_at:new Date().toISOString()}).eq('id',id).select('id,status').maybeSingle();
-      if(r.error) throw r.error; await audit(ctx,'abstract_review',{id,status,reason:body.reason||null}); return response(200,{ok:true,data:r.data});
+      const r=await s.from('abstract_submissions').update({status,reviewed_at:new Date().toISOString(),reviewed_by:ctx.admin.email,rejection_reason:body.reason||null,updated_at:new Date().toISOString()}).eq('id',id).select('id,status,master_id,event_key,event_title,title,team_id').maybeSingle();
+      if(r.error) throw r.error; await audit(ctx,'abstract_review',{id,status,reason:body.reason||null,master_id:r.data?.master_id||null,event_key:r.data?.event_key||null,event_title:r.data?.event_title||null,title:r.data?.title||null,team_id:r.data?.team_id||null}); return response(200,{ok:true,data:r.data});
     }
 
     if(action==='abstract_download'){
       const id=String(body.id);
       if(!id) return response(400,{ok:false,error:'Abstract id required'});
-      const row=await s.from('abstract_submissions').select('id,file_path,file_name,file_type').eq('id',id).maybeSingle();
+      const row=await s.from('abstract_submissions').select('id,file_path,file_name,file_type,master_id,event_key').eq('id',id).maybeSingle();
       if(row.error) throw row.error;
       if(!row.data?.file_path) return response(404,{ok:false,error:'No abstract file is attached to this submission'});
       const bucket='abstract-submissions';
       const signed=await s.storage.from(bucket).createSignedUrl(row.data.file_path,300);
       if(signed.error) throw signed.error;
-      await audit(ctx,'abstract_download',{id,file_name:row.data.file_name||null});
+      await audit(ctx,'abstract_download',{id,file_name:row.data.file_name||null,master_id:row.data.master_id||null,event_key:row.data.event_key||null});
       return response(200,{ok:true,url:signed.data.signedUrl,file_name:row.data.file_name||'abstract'});
     }
 
