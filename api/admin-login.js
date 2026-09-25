@@ -1,9 +1,10 @@
-import { response,authenticateAdmin,audit,sessionCookie,clearSessionCookie,client } from './_admin.js';
+import { response,authenticateAdmin,identifyAdmin,audit,sessionCookie,clearSessionCookie,client } from './_admin.js';
 
 export async function POST(request){
   if(request.method!=='POST') return response(405,{ok:false,error:'POST required'});
   try{
     const body=await request.json().catch(()=>({}));
+    if(body.action==='session'){const ctx=await identifyAdmin(request,body.username);return response(200,{ok:true,admin:ctx.admin});}
     if(body.action==='logout') return new Response(JSON.stringify({ok:true}),{status:200,headers:{'Content-Type':'application/json','Cache-Control':'no-store','Set-Cookie':clearSessionCookie()}});
     const username=String(body.username||'').trim();
     const password=String(body.password||'');
