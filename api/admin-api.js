@@ -97,7 +97,7 @@ export default async function handler(request){
 
     if(action==='admin_create'){
       const email=String(body.email||'').trim().toLowerCase(),display=String(body.display_name||'').trim();
-      if(!/^\\S+@\\S+\\.\\S+$/.test(email)||!display) return response(400,{ok:false,error:'Valid email and display name are required'});
+      if(!email.includes('@')||!email.includes('.')||!display) return response(400,{ok:false,error:'Valid email and display name are required'});
       const enabled=await s.from('admin_accounts').select('id',{count:'exact',head:true}).eq('enabled',true);
       if((enabled.count||0)>=10) return response(409,{ok:false,error:'Maximum of 10 enabled admins reached'});
       const ins=await s.from('admin_accounts').insert({email,display_name:display,enabled:true,created_by:ctx.admin.email}).select('id,email,display_name,enabled').single();
@@ -107,7 +107,7 @@ export default async function handler(request){
 
     if(action==='brochure_upload'){
       const dataUrl=String(body.data_url||''); const name=String(body.name||'brochure.pdf');
-      if(!/^data:application\\/pdf;base64,/.test(dataUrl)) return response(400,{ok:false,error:'Only PDF files are accepted'});
+      if(!dataUrl.startsWith('data:application/pdf;base64,')) return response(400,{ok:false,error:'Only PDF files are accepted'});
       const raw=Buffer.from(dataUrl.split(',')[1],'base64'); if(raw.length>50*1024*1024) return response(413,{ok:false,error:'Brochure exceeds the 50 MB limit'});
       const path='brochure/excelsior26-brochure.pdf';
       const r=await s.storage.from('excelsior-brochure').upload(path,raw,{contentType:'application/pdf',upsert:true,cacheControl:'3600'});
