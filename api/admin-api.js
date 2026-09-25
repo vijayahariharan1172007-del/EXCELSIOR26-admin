@@ -1,6 +1,6 @@
 import { response,identifyAdmin,audit,methodGuard } from './_admin.js';
 
-export default async function handler(request){
+export async function POST(request){
   const bad=methodGuard(request); if(bad) return bad;
   try{
     const body=await request.json().catch(()=>({}));
