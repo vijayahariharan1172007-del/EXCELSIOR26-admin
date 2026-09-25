@@ -26,9 +26,14 @@ export async function POST(request){
     if(action==='admin_credentials'){ return response(200,{ok:true,data:[{username:'exc26admin01',display_name:'Vijayahariharan',role:'owner'},{username:'exc26admin02',display_name:'Thangalakshmi',role:'admin'},{username:'exc26admin03',display_name:'Prabhanjani',role:'admin'},{username:'exc26admin04',display_name:'Arundhathi',role:'admin'},{username:'exc26admin05',display_name:'Sujay',role:'admin'},{username:'exc26admin06',display_name:'Sriraam',role:'admin'},{username:'exc26admin07',display_name:'Thejeswini',role:'admin'},{username:'exc26admin08',display_name:'Dr. Rajukumaran — Faculty',role:'admin'},{username:'exc26admin09',display_name:'Admin 09',role:'admin'},{username:'exc26admin10',display_name:'Admin 10',role:'admin'}]}); }
     if(action==='brochure_info'){ const url=s.storage.from('excelsior-brochure').getPublicUrl('brochure/excelsior26-brochure.pdf'); return response(200,{ok:true,url:url.data.publicUrl}); }
 if(action==='payment_settings'){
-      const r=await s.from('site_content').select('*').eq('key','payment_settings').maybeSingle();
-      if(r.error) throw r.error;
-      return response(200,{ok:true,data:r.data||{key:'payment_settings',title:'Payment Settings',content:JSON.stringify({upi_id:'',qr:''}),enabled:true}});
+      try{
+        const r=await s.from('site_content').select('key,title,content,enabled,updated_at').eq('key','payment_settings').limit(1);
+        if(r.error) throw r.error;
+        return response(200,{ok:true,data:r.data?.[0]||{key:'payment_settings',title:'Payment Settings',content:JSON.stringify({upi_id:'',qr:''}),enabled:true}});
+      }catch(e){
+        console.error('payment_settings read failed:',e);
+        return response(200,{ok:true,data:{key:'payment_settings',title:'Payment Settings',content:JSON.stringify({upi_id:'',qr:''}),enabled:true}});
+      }
     }
     if(action==='payment_settings_update'){
       const upi=String(body.upi_id||'').trim();
@@ -37,14 +42,13 @@ if(action==='payment_settings'){
       if(!/^((https?:\\/\\/)|data:image\\/(png|jpeg|webp);base64,)/i.test(qr)) return response(400,{ok:false,error:'Payment QR must be an image URL or PNG/JPG/WebP image.'});
       if(qr.startsWith('data:')&&qr.length>1400000) return response(413,{ok:false,error:'QR image is too large. Keep it under 1 MB.'});
       const content=JSON.stringify({upi_id:upi,qr});
-      const existing=await s.from('site_content').select('key').eq('key','payment_settings').maybeSingle();
-      if(existing.error) throw existing.error;
-      let r;
-      if(existing.data?.key){
-        r=await s.from('site_content').update({title:'Payment Settings',content,enabled:true,updated_at:new Date().toISOString()}).eq('key','payment_settings').select('*').maybeSingle();
-      }else{
-        r=await s.from('site_content').insert({key:'payment_settings',title:'Payment Settings',content,enabled:true}).select('*').maybeSingle();
-      }
+      const r=await s.from('site_content').upsert({
+        key:'payment_settings',
+        title:'Payment Settings',
+        content,
+        enabled:true,
+        updated_at:new Date().toISOString()
+      },{onConflict:'key'}).select('key,title,content,enabled,updated_at').single();
       if(r.error) throw r.error;
       await audit(ctx,'payment_settings_update',{upi_id:upi,qr_updated:true});
       return response(200,{ok:true,data:r.data});
