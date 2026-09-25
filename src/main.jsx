@@ -19,8 +19,8 @@ const ADMIN_USERS=[
  {username:'exc26admin06',name:'Sriraam'},
  {username:'exc26admin07',name:'Thejeswini'},
  {username:'exc26admin08',name:'Dr. Rajukumaran — Faculty'},
- {username:'exc26admin09',name:'Hari'},
- {username:'exc26admin10',name:'Kavin'}
+ {username:'exc26admin09',name:'User1'},
+ {username:'exc26admin10',name:'User2'}
 ];
 function operatorFor(username){
  const user=ADMIN_USERS.find(x=>x.username===String(username||''));
