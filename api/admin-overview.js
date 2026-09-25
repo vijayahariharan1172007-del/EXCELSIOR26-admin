@@ -1,5 +1,7 @@
 const USERS=new Set(Array.from({length:10},(_,i)=>'exc26admin'+String(i+1).padStart(2,'0')));
 
+console.log('ADMIN_OVERVIEW_MODULE_LOADED');
+
 function json(status,body){
   return new Response(JSON.stringify(body),{
     status,
@@ -50,6 +52,7 @@ function countFrom(response){
 }
 
 export default async function handler(request){
+  console.log('ADMIN_OVERVIEW_INVOKED',request.method);
   if(request.method!=='POST') return json(405,{ok:false,error:'POST required'});
   try{
     const body=await request.json().catch(()=>({}));
@@ -59,6 +62,7 @@ export default async function handler(request){
     if(action!=='overview') return json(400,{ok:false,error:'Unknown overview action'});
 
     const {url,key}=config();
+    console.log('ADMIN_OVERVIEW_CONFIGURED',url);
     const names=['master_registrations','event_registrations','abstract_submissions','qr_verifications'];
     const counts=[];
     for(const table of names){
