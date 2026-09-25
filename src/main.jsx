@@ -51,18 +51,30 @@ function Review({title,action,fields}){const[d,setD]=useState(null),[q,setQ]=use
 }
 
 function teamMemberMasterIds(row){
- const numbered=[];
- Object.entries(row||{}).forEach(([key,value])=>{
-  if(value==null||value==='')return;
-  const k=String(key).toLowerCase();
-  if(!((k.includes('team')||k.includes('member'))&&k.includes('master')&&k.includes('id')))return;
-  const m=k.match(/(?:team|member)[^0-9]*(\\d+)/);
-  numbered.push({n:m?Number(m[1]):999,key,value:String(value)});
- });
- const arrayValue=Object.entries(row||{}).find(([key,value])=>Array.isArray(value)&&String(key).toLowerCase().includes('master')&&String(key).toLowerCase().includes('team'));
- if(arrayValue) arrayValue[1].forEach((value,i)=>{if(value!=null&&value!=='')numbered.push({n:i+1,key:'array'+i,value:String(value)})});
+ const ids=[];
+ const members=row?.team_members;
+ if(Array.isArray(members)){
+  members.forEach(m=>{
+   if(m==null)return;
+   if(typeof m==='string'){if(m.trim())ids.push(m.trim());return;}
+   const id=m.masterId??m.master_id??m.masterID;
+   if(id!=null&&String(id).trim())ids.push(String(id).trim());
+  });
+ }
+ const arrayIds=row?.team_master_ids;
+ if(Array.isArray(arrayIds))arrayIds.forEach(id=>{if(id!=null&&String(id).trim())ids.push(String(id).trim())});
+ const custom=row?.custom_fields;
+ if(custom&&typeof custom==='object'){
+  Object.entries(custom).forEach(([key,value])=>{
+   if(value==null||value==='')return;
+   if(/team.*master.*id|master.*id.*team/i.test(key)){
+    if(Array.isArray(value))value.forEach(id=>{if(id!=null&&String(id).trim())ids.push(String(id).trim())});
+    else ids.push(String(value).trim());
+   }
+  });
+ }
  const seen=new Set();
- return numbered.sort((a,b)=>a.n-b.n||a.key.localeCompare(b.key)).map(x=>x.value).filter(x=>{if(seen.has(x))return false;seen.add(x);return true});
+ return ids.filter(id=>{if(seen.has(id))return false;seen.add(id);return true});
 }
 function Events(){const[d,setD]=useState(null),[cfg,setCfg]=useState(null),[tab,setTab]=useState('registrations'),[q,setQ]=useState('');useEffect(()=>{Promise.all([call('event_list'),call('event_config')]).then(x=>{setD(x[0].data||[]);setCfg(x[1].data||[])}).catch(()=>{})},[]);const list=(d||[]).filter(x=>!q||Object.values(x).join(' ').toLowerCase().includes(q.toLowerCase()));const maxTeamMembers=Math.max(0,...list.map(teamMemberMasterIds).map(x=>x.length));return <><Panel title="Event Registration" extra={<div className="tabs"><button className={tab==='registrations'?'sel':''} onClick={()=>setTab('registrations')}>Registrations</button><button className={tab==='config'?'sel':''} onClick={()=>setTab('config')}>Event configuration</button></div>}>{tab==='registrations'?<><div className="toolbar"><input placeholder="Search participant, event, UTR or team member Master ID…" value={q} onChange={e=>setQ(e.target.value)}/></div>{!d?<Loading/>:<div className="table"><table><thead><tr>{['master_id','name','event','fee','utr','payment_status','status','team_id','event_code'].map(x=><th key={x}>{x.replaceAll('_',' ')}</th>)}{Array.from({length:maxTeamMembers},(_,i)=><th key={'team-master-'+i}>Team Member {i+1} Master ID</th>)}<th>Actions</th></tr></thead><tbody>{list.map(r=><EventRow key={r.id} r={r} reload={()=>call('event_list').then(x=>setD(x.data||[]))} maxTeamMembers={maxTeamMembers}/>)}</tbody></table></div>}</>:<Config rows={cfg} setRows={setCfg}/>}</Panel></>}
 function EventRow({r,reload,maxTeamMembers}){const[b,setB]=useState(false);const memberIds=teamMemberMasterIds(r);async function act(kind,status){setB(true);try{await call(kind,{id:r.id,status});await reload()}catch(e){alert(e.message)}finally{setB(false)}}return <tr>{['master_id','name','event','fee','utr','payment_status','status','team_id','event_code'].map(x=><td key={x}>{String(r[x]??'—')}</td>)}{Array.from({length:maxTeamMembers},(_,i)=><td key={'team-master-'+i}>{memberIds[i]||'—'}</td>)}<td><button className="mini good" disabled={b} onClick={()=>act('payment_review','approved')}>Pay ✓</button><button className="mini good" disabled={b} onClick={()=>act('event_review','approved')}>Approve</button><button className="mini bad" disabled={b} onClick={()=>act('event_review','rejected')}>Reject</button></td></tr>}
